@@ -17,4 +17,13 @@ jobs:
       - name: Build project
         run: yarn build
 
+      - name: Copy files and folders to remote server
+        uses: picodebr/copy-action@v1
+        with:
+          ssh_key: ${{ secrets.SSH_KEY }}
+          ssh_user: ${{ secrets.SSH_USER }}
+          ssh_host: ${{ secrets.SSH_HOST }}
+          source: .next public Dockerfile package.json next.config.js
+          destination: ~/freelance-catcher
+
       - run: echo "🍏 This job's status is ${{ job.status }}."
