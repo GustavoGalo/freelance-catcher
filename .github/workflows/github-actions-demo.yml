@@ -17,13 +17,30 @@ jobs:
       - name: Build project
         run: yarn build
 
-      - name: Copy files and folders to remote server
-        uses: picodebr/copy-action@v1
-        with:
-          ssh_key: ${{ secrets.SSH_KEY }}
-          ssh_user: ${{ secrets.SSH_USER }}
-          ssh_host: ${{ secrets.SSH_HOST }}
-          source: .next public Dockerfile package.json next.config.js
-          destination: ~/freelance-catcher
+      - name: create ssh config file
+        shell: bash
+        run: |
+          COPY_ACTION_KEY_NAME="KEY_$RANDOM"
+          echo "COPY_ACTION_KEY_NAME=$COPY_ACTION_KEY_NAME" >> $GITHUB_ENV
+
+          mkdir -p ~/.ssh
+          echo '${{ secrets.SSH_KEY }}' > ~/.ssh/$COPY_ACTION_KEY_NAME
+          sudo chmod 400 ~/.ssh/$COPY_ACTION_KEY_NAME
+
+      - name: copy files
+        shell: bash
+        run: |
+          rsync -cr  \
+            -e "ssh -o PubKeyAuthentication=yes -o RequestTTY=no -o StrictHostKeyChecking=no -i ~/.ssh/$COPY_ACTION_KEY_NAME" \
+            .next public Dockerfile package.json next.config.js ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/freelance-catcher
+
+      # - name: Copy files and folders to remote server
+      #   uses: picodebr/copy-action@v1
+      #   with:
+      #     ssh_key: ${{ secrets.SSH_KEY }}
+      #     ssh_user: ${{ secrets.SSH_USER }}
+      #     ssh_host: ${{ secrets.SSH_HOST }}
+      #     source: .next public Dockerfile package.json next.config.js
+      #     destination: ~/freelance-catcher
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
