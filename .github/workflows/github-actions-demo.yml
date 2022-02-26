@@ -30,7 +30,7 @@ jobs:
       - name: copy files
         shell: bash
         run: |
-          rsync -cr  \
+          rsync -auvz  \
             -e "ssh -o PubKeyAuthentication=yes -o RequestTTY=no -o StrictHostKeyChecking=no -i ~/.ssh/$COPY_ACTION_KEY_NAME" \
             .next public Dockerfile package.json next.config.js ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/freelance-catcher
 
